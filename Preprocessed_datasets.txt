@@ -9,4 +9,4 @@ It includes:
 - Source code used for preprocessing
 
 Download the dataset:
-https://drive.google.com/drive/folders/1HvSsO2DTIwfdDPBmAorNUD6OfHpkNpr-?usp=drive_link
+"G:\My Drive\AI POWERED REAL TIME SPEECH TRANSLATION"
