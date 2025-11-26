@@ -1,159 +1,236 @@
-# Module 2 — Multilingual Batch Translator
+# Module 3 — Real-Time OTT Speech-to-Speech Translator (Free/Open Source)
 
 ## Goal
-Automatically transcribe audio files and translate them to 12+ target languages, generating audio outputs for each translation.
-
-## Features
-- ✅ Automatic speech-to-text transcription
-- ✅ Translation to 12+ languages (Hindi, English, Punjabi, Marathi, Kannada, Telugu, Tamil, Gujarati, Malayalam, Bengali, Odia, Urdu)
-- ✅ Text-to-speech generation for all translations
-- ✅ Batch processing of multiple audio files
-- ✅ CSV log of all translations
+Build a real-time speech-to-speech translator using **free, open-source tools** — no Azure required! Uses Whisper (local STT) + Google Translate + gTTS.
 
 ---
 
-## Quick Start (VS Code — Windows)
+## Features
+- ✅ **Free & Open Source** — No Azure subscription required!
+- ✅ **Whisper STT** — High-quality local speech recognition (offline-capable)
+- ✅ **Google Speech Recognition** — Cloud-based alternative (free tier)
+- ✅ **Google Translate** — Via deep-translator (free API)
+- ✅ **gTTS** — Google Text-to-Speech (free)
+- ✅ **12+ Languages** — Supports all Indian languages from Module 2
+- ✅ **Multiple audio formats** — MP3, WAV, M4A, FLAC, OGG
+
+---
+
+## Prerequisites
+
+### No Subscription Required! 🎉
+
+This module uses **free, open-source tools**:
+- **Whisper** (OpenAI) — Free, local STT
+- **Google Speech Recognition** — Free tier
+- **Google Translate** — Free API (via deep-translator)
+- **gTTS** — Free text-to-speech
+
+No Azure account needed!
+
+---
+
+## Quick Start
 
 ### Step 1: Install Dependencies
 
 ```powershell
-cd speech-translator\module2
+cd speech-translator\module3
 pip install -r requirements.txt
 ```
 
-**Note:** If you encounter issues with `googletrans`, you may need to install it from the GitHub repository:
+### Step 2: Choose STT Method (Optional)
+
+Edit `module3_ott_realtime.py` or set environment variable:
+
 ```powershell
-pip install googletrans==4.0.0-rc1
+# Option 1: Whisper (local, high quality, offline) - Recommended
+set STT_METHOD=whisper
+set WHISPER_MODEL=base  # tiny, base, small, medium, large
+
+# Option 2: Google Speech Recognition (cloud, free tier)
+set STT_METHOD=google
 ```
 
-### Step 2: Get Sample Audio Files (Optional)
+**Whisper Models:**
+- `tiny` — Fastest, least accurate (~39M params)
+- `base` — **Recommended** — Good balance (~74M params)
+- `small` — Better accuracy (~244M params)
+- `medium` — High accuracy (~769M params)
+- `large` — Best accuracy (~1550M params, slowest)
 
-**Option A: Download sample datasets**
-```powershell
-python fetch_audio_datasets.py
-```
-
-This will download 6 sample audio files from the IndicSUPERB dataset into the `data/` folder.
-
-**Option B: Use your own audio files**
-Place your audio files (`.wav`, `.mp3`, `.m4a`, `.flac`, `.ogg`) in the `data/` folder.
-
-### Step 3: Run Batch Translation
+### Step 3: Run Real-Time Translator
 
 ```powershell
-python module2_batch_translator.py
+# Single file translation
+python module3_ott_realtime.py ../module2/data/sample_en_000.mp3 hi
+
+# Or use in Python:
+python -c "from module3_ott_realtime import realtime_translate_audio_file; realtime_translate_audio_file('../module2/data/sample_en_000.mp3', 'hi')"
 ```
 
 ---
 
-## Output Structure
+## Usage Examples
 
-After running, you'll have:
+### Example 1: Translate Audio File
 
+```python
+from module3_ott_realtime import realtime_translate_audio_file
+
+# Translate to Hindi using Whisper
+result = realtime_translate_audio_file(
+    audio_file="../module2/data/sample_en_000.mp3",
+    target_lang="hi",
+    stt_method="whisper",  # or "google"
+    save_output=True
+)
+
+print(f"Recognized: {result['recognized_text']}")
+print(f"Translated: {result['translated_text']}")
 ```
-speech-translator/
-└─ module2/
-   ├─ data/                    # Input audio files
-   ├─ outputs/                  # Generated MP3 files (translated speech)
-   │  ├─ sample_0_hi_en.mp3    # Hindi audio → English translation
-   │  ├─ sample_0_hi_hi.mp3    # Hindi audio → Hindi (same)
-   │  ├─ sample_0_hi_pa.mp3    # Hindi audio → Punjabi translation
-   │  └─ ...
-   └─ logs/                     # CSV logs with all translations
-      └─ translations_YYYYMMDD_HHMMSS.csv
+
+### Example 2: Batch Translate Multiple Files
+
+```python
+from module3_ott_realtime import batch_realtime_translate
+import glob
+
+# Get all audio files
+audio_files = glob.glob("../module2/data/*.mp3")[:10]  # First 10 files
+
+# Translate to multiple languages
+results = batch_realtime_translate(
+    audio_files=audio_files,
+    target_langs=["hi", "mr", "te"],  # Hindi, Marathi, Telugu
+    stt_method="whisper"
+)
+```
+
+### Example 3: Use Google Speech Recognition
+
+```python
+from module3_ott_realtime import realtime_translate_audio_file
+
+# Use Google STT instead of Whisper
+result = realtime_translate_audio_file(
+    audio_file="audio.wav",
+    target_lang="hi",
+    stt_method="google"  # Cloud-based, free tier
+)
 ```
 
 ---
 
-## Example Output
+## Supported Languages
 
-```
-🎧 Processing: sample_1_hi.wav
-🗣 Recognized: आप कैसे हैं
-  🌐 Translating → English (en) ... ✅
-  🌐 Translating → Punjabi (pa) ... ✅
-  🌐 Translating → Marathi (mr) ... ✅
-  ...
-🎉 Batch translation complete!
-📁 Output files saved in: outputs
-📊 Total files generated: 12
-```
+All languages from Module 2 are supported:
+
+| Code | Language | STT | Translation | TTS |
+|------|----------|-----|-------------|-----|
+| `en` | English | ✅ | ✅ | ✅ |
+| `hi` | Hindi | ✅ | ✅ | ✅ |
+| `pa` | Punjabi | ✅ | ✅ | ⚠️ (uses Hindi fallback) |
+| `mr` | Marathi | ✅ | ✅ | ✅ |
+| `kn` | Kannada | ✅ | ✅ | ✅ |
+| `te` | Telugu | ✅ | ✅ | ✅ |
+| `ta` | Tamil | ✅ | ✅ | ✅ |
+| `gu` | Gujarati | ✅ | ✅ | ✅ |
+| `ml` | Malayalam | ✅ | ✅ | ✅ |
+| `bn` | Bengali | ✅ | ✅ | ✅ |
+| `or` | Odia | ✅ | ✅ | ⚠️ (uses Hindi fallback) |
+| `ur` | Urdu | ✅ | ✅ | ✅ |
+
+**Note:** Punjabi and Odia use Hindi TTS as fallback since gTTS doesn't support them directly.
 
 ---
 
-## Configuration
+## Output
 
-Edit `module2_batch_translator.py` to customize:
+After running, you'll get:
+- **Recognized text** (original speech-to-text)
+- **Translated text** (translated to target language)
+- **TTS audio file** (saved as `{filename}_{lang}.mp3` in `outputs/` directory)
 
-- **Target languages**: Modify the `TARGET_LANGS` dictionary
-- **Input/Output directories**: Change `INPUT_DIR` and `OUTPUT_DIR`
-- **Audio settings**: Adjust sample rate in `convert_to_wav()` function
+---
+
+## STT Method Comparison
+
+| Method | Pros | Cons | Best For |
+|--------|------|------|----------|
+| **Whisper** | ✅ Offline, high quality, multiple languages | ⚠️ Slower, requires GPU for large models | Local processing, privacy |
+| **Google STT** | ✅ Fast, free tier, cloud-based | ⚠️ Requires internet, privacy concerns | Quick testing, cloud deployment |
+
+**Recommendation:** Use **Whisper `base`** model for best balance of speed and quality.
 
 ---
 
 ## Troubleshooting
 
-### Issue: "No audio files found"
-**Solution:** 
-- Run `python fetch_audio_datasets.py` to download samples, OR
-- Place your own audio files in the `data/` folder
+### Issue: "Whisper not available"
+```powershell
+pip install openai-whisper
+```
 
-### Issue: Speech recognition fails
-**Solutions:**
-- Check internet connection (Google Speech Recognition requires internet)
-- Ensure audio file is clear and not too noisy
-- Verify audio format (will be auto-converted to 16kHz mono WAV)
+### Issue: Whisper is slow
+→ Use smaller model: `WHISPER_MODEL=tiny` or `base`
+→ Or use Google STT: `STT_METHOD=google`
 
-### Issue: Translation service errors
-**Solutions:**
-- Check internet connection
-- Google Translate may have rate limits — add delays between requests if needed
-- For offline mode, use alternative translation APIs (Azure, DeepL)
+### Issue: "SpeechRecognition not available"
+```powershell
+pip install SpeechRecognition
+```
 
-### Issue: TTS fails for some languages
-**Solutions:**
-- Some language codes may not be supported by gTTS
-- Check gTTS language support: https://gtts.readthedocs.io/en/latest/module.html#languages
-- Try alternative TTS engines (pyttsx3 for offline, or cloud APIs)
+### Issue: Audio conversion fails
+```powershell
+pip install librosa soundfile
+```
 
----
+### Issue: Translation fails
+→ Check internet connection (Google Translate requires internet)
+→ Verify deep-translator is installed: `pip install deep-translator`
 
-## Performance Tips
-
-1. **Faster processing**: Process files in parallel (add threading/multiprocessing)
-2. **Offline mode**: Replace Google services with offline alternatives:
-   - STT: `vosk` or `whisper`
-   - Translation: Use pre-loaded models or APIs
-   - TTS: `pyttsx3` (offline) or `coqui-tts`
-3. **Progress tracking**: Already included with `tqdm`
-4. **Caching**: Add caching for repeated translations
+### Issue: TTS fails for Punjabi/Odia
+→ These languages use Hindi TTS as fallback (this is expected)
 
 ---
 
-## Advanced: Offline Alternative
+## Cost: FREE! 🎉
 
-For offline operation, create `module2_batch_translator_offline.py` with:
+- **Whisper**: 100% free, open-source, runs locally
+- **Google Speech Recognition**: Free tier available (60 requests/minute)
+- **Google Translate**: Free tier (via deep-translator, no API key needed for basic usage)
+- **gTTS**: Free, unlimited usage
 
-- **STT**: Use `whisper` (OpenAI) or `vosk` (offline)
-- **Translation**: Use local models (transformers from Module 1)
-- **TTS**: Use `pyttsx3` or `coqui-tts`
-
----
-
-## Next Steps
-
-- **Module 3**: Real-time translation (microphone input → instant translation → spoken output)
-- **Module 4**: Web interface or API deployment
+**No subscription or API keys required!**
 
 ---
 
-## Dependencies
+## Integration with Module 2
 
-See `requirements.txt` for full list. Key packages:
-- `SpeechRecognition`: Speech-to-text
-- `googletrans`: Translation service
-- `gTTS`: Text-to-speech
-- `pydub`: Audio processing
-- `datasets`: Sample audio download
-- `tqdm`: Progress bars
+You can use Module 3 to process files from Module 2 with higher quality STT:
+
+```python
+# Process Module 2 audio files with Whisper (better quality)
+from module3_ott_realtime import realtime_translate_audio_file
+
+realtime_translate_audio_file(
+    audio_file="../module2/data/sample_en_000.mp3",
+    target_lang="hi",
+    stt_method="whisper"  # Better quality than Google STT
+)
+```
+
+**Advantage:** Whisper provides better transcription quality than Google Speech Recognition for complex audio.
+
+---
+
+## Future Enhancements
+
+- [ ] Streaming mode (process audio in chunks)
+- [ ] Live YouTube/OTT stream integration
+- [ ] Faster Whisper (CTranslate2 backend)
+- [ ] WebSocket server for real-time API
+- [ ] Multiple target language outputs in parallel
+- [ ] Offline translation models (no internet required)
 

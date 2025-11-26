@@ -1,79 +1,50 @@
-# Module 2 — Quick Start Guide
+# Module 3 — Quick Start (3 Minutes)
 
-## 🚀 3-Step Setup
+## ⚡ 3 Steps to Real-Time Translation (FREE!)
 
 ### 1️⃣ Install Dependencies
 ```powershell
-cd speech-translator\module2
+cd speech-translator\module3
 pip install -r requirements.txt
 ```
 
-### 2️⃣ Get Audio Files
+### 2️⃣ Run Translator
 ```powershell
-# Option A: Download samples
-python fetch_audio_datasets.py
-
-# Option B: Place your own audio files in 'data/' folder
+# Translate audio file to Hindi
+python module3_ott_realtime.py ../module2/data/sample_en_000.mp3 hi
 ```
 
-### 3️⃣ Run Translation
-```powershell
-python module2_batch_translator.py
+### 3️⃣ That's It! 🎉
+No API keys or subscriptions needed — everything is free!
+
+---
+
+## 🎯 Quick Test
+
+```python
+from module3_ott_realtime import realtime_translate_audio_file
+
+# Translate English audio to Hindi (male voice)
+realtime_translate_audio_file(
+    audio_file="your_audio.wav",
+    target_lang="hi",
+    gender="male"
+)
 ```
 
 ---
 
-## 📊 What Happens
+## 📊 What You Get
 
-1. **Input**: Audio files from `data/` folder
-2. **Process**: 
-   - Convert audio → text (speech recognition)
-   - Translate text → 12+ languages
-   - Convert translations → speech (TTS)
-3. **Output**: 
-   - MP3 files in `outputs/` folder (one per language)
-   - CSV log in `logs/` folder
+- **Input**: Audio file (any language)
+- **Process**: Real-time translation
+- **Output**: 
+  - Translated text (console)
+  - Neural voice audio file
+  - Optional speaker playback
 
 ---
 
-## 📁 Folder Structure (Auto-Created)
-
-```
-module2/
-├── data/           ← Put audio files here
-├── outputs/        ← Translated MP3s appear here
-└── logs/           ← Translation logs appear here
-```
-
----
-
-## ⚡ Example
-
-```
-🎧 Processing: sample_1_hi.wav
-🗣 Recognized: आप कैसे हैं
-  🌐 Translating → English (en) ... ✅
-  🌐 Translating → Punjabi (pa) ... ✅
-  ...
-🎉 Batch translation complete!
-📊 Total files generated: 12
-```
-
----
-
-## ❓ Troubleshooting
-
-**"No audio files found"**
-→ Run `fetch_audio_datasets.py` or add your own files to `data/`
-
-**Internet required**
-→ Uses Google services for STT, translation, and TTS
-
-**Rate limits**
-→ Add small delays if processing many files
-
----
-
-## 🎯 Next: Module 3
-Real-time microphone translation!
+## 💰 Cost
+Free tier covers ~5 hours/month for testing!
 
