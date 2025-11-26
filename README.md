@@ -1,150 +1,141 @@
-# QalamAI Speech Translator – Monorepo (Modules 1–4)
+# Module 1 — Environment & Basic Translation Test
 
-A multi-module project for speech translation workflows, ranging from environment checks to dataset preparation, batch translation, realtime OTT/YouTube translation, and a web UI built with Flask.
+## Goal
+Set up environment, install dependencies, and run a basic translation test (Hindi ↔ English) using `transformers` pipeline and a small model (Helsinki-NLP) to confirm tokenization, model loading and inference work.
 
-## Repository Layout
+## Quick Start (Local — VS Code)
 
-- `speech-translator/module1/` – Environment & quick sanity checks
-  - `colab_setup.ipynb`, `test_env.py`, `requirements.txt`
-  - Goal: verify Python/audio stack, GPUs (if any), and key libraries
+### 1. Create virtual environment
 
-- `speech-translator/module2/` – Offline/Batch translation toolkit
-  - Scripts: dataset downloaders, audio conversion, batch translator
-  - Assets: `data/`, `outputs/`, `logs/` etc.
-  - Goal: prepare audio datasets, convert formats, translate in batches
-
-- `speech-translator/module3/` – OTT/realtime translation (scripted)
-  - `module3_ott_realtime.py` and related docs
-  - Goal: run realtime style translation from mic/stream inputs without web UI
-
-- `speech-translator/module4/` – Flask web app (UI + endpoints)
-  - `app.py`, `templates/`, `static/`, `uploads/`
-  - Goal: upload audio/video, live mic translation, and YouTube chunked translation with TTS output
-
----
-
-## Features by Module
-
-### Module 1 – Environment Check
-- Quick verification of Python/audio libs
-- Simple recognition/translation dry-runs
-- Good for first-time setup and CI sanity checks
-
-### Module 2 – Batch Tools
-- Download/open datasets (e.g., HuggingFace)
-- Convert `mp3 ↔ wav` with consistent sampling (16kHz, mono)
-- Batch translate using chosen translation backend
-- Logs and outputs saved under `outputs/`, `logs/`
-
-### Module 3 – OTT/Realtime (Scripted)
-- CLI-style experiment for realtime translation from mic or stream
-- Good for quick experiments without the web server
-
-### Module 4 – Flask Web App
-- Pages:
-  - Live Microphone translation (record → STT → translate → TTS)
-  - Upload Audio/Video with preview and TTS output
-  - YouTube link translation (downloads audio, chunks ~8s, STT+translate+TTS)
-- TTS voices:
-  - Edge TTS when available (gendered voices for supported languages)
-  - Fallback to gTTS
-- STT:
-  - Google SpeechRecognition (chunking + language fallbacks)
-  - Conversion pipeline robust to assorted formats (moviepy/librosa/pydub)
-
-Supported target languages (UI): en, hi, pa, mr, kn, te, ta, gu, ml, bn, or, ur
-
----
-
-## Prerequisites
-
-- Python 3.11–3.13 recommended
-- Windows users: FFmpeg is handled automatically via `imageio_ffmpeg` in Module 4. For other modules, installing FFmpeg system-wide is still recommended:
-  - Download static build from `ffmpeg.org` and add `bin` to PATH
-- For YouTube: `pytube` and `yt-dlp` are used as needed
-
----
-
-## Quick Start – Module 4 (Web App)
-
-1) Install dependencies
+**Windows (PowerShell):**
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
 ```
-cd speech-translator/module4
+
+**macOS / Linux:**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### 2. Install dependencies
+```bash
 python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
-2) Run the app
-```
-python app.py
-```
-
-3) Open the UI
-```
-http://127.0.0.1:5000
+### 3. Run the test
+```bash
+python test_env.py
 ```
 
-Notes
-- If using a separate static host (e.g., Netlify), deploy `speech-translator/module4/` and set `window.BACKEND_BASE_URL` in `index.html` to your Flask server URL.
+**Expected output:** Model downloads (first run), then printed translations with timing information and BLEU scores.
 
 ---
 
-## Module 2 – Common Commands
+## Quick Start (Google Colab)
 
-- Convert mp3 to wav (example):
+Open a new Colab notebook and run these cells sequentially:
+
+### Cell 1 — Install dependencies
+```python
+# Colab: install exact versions that are Colab-friendly
+!pip install -q torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu
+!pip install -q transformers==4.36.2 sentencepiece==0.1.99 sacrebleu==2.3.1 huggingface-hub==0.18.1
 ```
-python convert_mp3_to_wav.py
+
+### Cell 2 — Upload sample file (or create)
+```python
+%%bash
+cat > sample_texts.csv <<'CSV'
+id,text,lang
+1,"Hello, how are you?","en"
+2,"नमस्ते, आप कैसे हैं?","hi"
+3,"Good morning, everyone","en"
+4,"क्या आप आज उपलब्ध हैं?","hi"
+CSV
 ```
-- Batch translate
+
+### Cell 3 — Quick test
+```python
+from transformers import pipeline
+hi_en = pipeline("translation", model="Helsinki-NLP/opus-mt-hi-en")
+print(hi_en("नमस्ते, आप कैसे हैं?"))
 ```
-python module2_batch_translator.py
-```
-- Dataset utilities
-```
-python fetch_audio_datasets.py
-```
-Refer to `QUICK_START.md` and `README.md` inside Module 2 for details.
+
+> **Note:** If GPU runtime is available, Colab will use it automatically. For these small models, CPU is fine.
 
 ---
 
-## Module 3 – Realtime Script
+## Hugging Face Authentication (Optional)
 
-- See `speech-translator/module3/README.md` and `QUICK_START.md`
-- Example
+If you need access to large or private models:
+
+**Local terminal:**
+```bash
+huggingface-cli login
+# or export in shell
+export HUGGINGFACE_HUB_TOKEN="hf_xxx"
 ```
-python module3_ott_realtime.py
+
+**In Colab:**
+```python
+from huggingface_hub import notebook_login
+notebook_login()
 ```
 
 ---
 
-## Configuration & Tips
-
-- STT language hint: Module 4 allows a `source_lang` hint on `/mic_record` to improve recognition.
-- Audio conversion: `app.py` attempts multiple pipelines (moviepy → system ffmpeg → librosa → pydub → moviepy fallback) to maximize compatibility.
-- YouTube: If `pytube` fails, the app falls back to `yt-dlp`.
-
----
-
-## Troubleshooting
-
-- "FFmpeg not found" in Modules 1–3
-  - Install FFmpeg and ensure `ffmpeg -version` works in terminal.
-- 400/500 responses in the web app
-  - Check server logs; the app prints precise errors (invalid URL, download failure, STT errors)
-- Unicode console errors on Windows
-  - The app configures UTF-8 console output; if problems persist, run terminal as UTF-8 (`chcp 65001`).
+## Project Structure
+```
+speech-translator/
+├─ module1/
+│  ├─ README.md              # This file
+│  ├─ requirements.txt       # Python dependencies
+│  ├─ test_env.py           # Quick command-line test
+│  ├─ colab_setup.ipynb     # Optional Colab notebook
+│  └─ sample_texts.csv      # Tiny sample phrases
+```
 
 ---
 
-## License
+## Purpose
+Validate that transformers pipelines can be loaded and perform Hindi↔English translation on sample phrases.
 
-This repository is provided for educational and research purposes. Review third‑party package licenses (gTTS, Edge TTS, yt-dlp, pytube, librosa, etc.) before commercial use.
+## Models Used
+- **Helsinki-NLP/opus-mt-hi-en**: Hindi → English translation
+- **Helsinki-NLP/opus-mt-en-hi**: English → Hindi translation
+
+These are lightweight models suitable for CPU inference and testing.
 
 ---
 
-## Acknowledgments
+## Common Problems & Fixes
 
-- Python SpeechRecognition, gTTS, Edge TTS, librosa, moviepy, yt-dlp, pytube
-- Hugging Face datasets (optional, Module 2)
+### Out of memory / crash on load
+→ Use smaller models (`opus-mt` are small). If using Whisper/large models, use GPU instance or Whisper tiny/small.
 
+### Version conflicts (torch / transformers)
+→ Use the locked versions from `requirements.txt`. If you see `ImportError`, reinstall `transformers` matching your `torch`.
+
+### Model download blocked
+→ Authenticate with HF token if model requires it. Check network/proxy.
+
+### Sacrebleu error
+→ Ensure `sacrebleu` is installed (included in requirements.txt). For corpus BLEU, inputs must be lists of equal length.
+
+---
+
+## Caching Models
+
+Models are cached at `~/.cache/huggingface/transformers`. For CI or ephemeral runners, mount a volume to persist cache. For Docker builds, do not install large models into image. Instead pull models at container start and use a shared PV in prod (AKS) or pre-warm node images (AMI).
+
+---
+
+## Next Steps
+
+After confirming Module 1 works:
+- **Module 2**: Audio conversion, pydub, speech_recognition/Whisper examples
+- **Module 3**: Integration and deployment
 
